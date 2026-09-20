@@ -43,9 +43,8 @@ JWTOffline/
 ## Team
 
 - Isa Din
-- [Member 2]
-- [Member 3]
-- [Member 4]
+- Steven Passynkov
+- Osmond Jiang
 
 **Course:** DIGT2107 - Practice of Software Development  
 **Instructor:** Dr. May Haidar  
