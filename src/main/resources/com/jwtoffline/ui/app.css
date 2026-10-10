@@ -1,0 +1,28 @@
+.root {
+    -fx-font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #f6f7f9;
+}
+.sidebar { -fx-background-color: #1f2430; }
+.brand { -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; }
+.tagline { -fx-text-fill: #9aa3b5; -fx-font-size: 11px; }
+.nav-button {
+    -fx-background-color: transparent; -fx-text-fill: #d5d9e2;
+    -fx-alignment: center-left; -fx-padding: 8 12; -fx-background-radius: 6;
+}
+.nav-button:hover { -fx-background-color: #2c3342; }
+.nav-active { -fx-background-color: #3b5bdb; -fx-text-fill: white; }
+.screen-title { -fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1f2430; }
+.caption { -fx-text-fill: #5c6370; }
+.section-label { -fx-font-weight: bold; -fx-text-fill: #343a46; }
+.code-area { -fx-font-family: "Consolas", "Menlo", monospace; -fx-font-size: 12.5px; }
+.mono { -fx-font-family: "Consolas", "Menlo", monospace; -fx-font-weight: bold; }
+.card { -fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e3e6eb; -fx-border-radius: 8; }
+.card-title { -fx-font-weight: bold; -fx-font-size: 14px; }
+.button { -fx-background-radius: 6; -fx-padding: 6 14; }
+.primary { -fx-background-color: #3b5bdb; -fx-text-fill: white; }
+.danger { -fx-text-fill: #c92a2a; }
+.status { -fx-padding: 8 12; -fx-background-radius: 6; -fx-font-weight: bold; }
+.status-ok { -fx-background-color: #e6f4ea; -fx-text-fill: #1e7b34; }
+.status-bad { -fx-background-color: #fdecea; -fx-text-fill: #b3261e; }
+.status-warn { -fx-background-color: #fff4e5; -fx-text-fill: #8a5300; }
