@@ -26,7 +26,7 @@ class InMemoryTokenRepositoryTest {
         SavedToken saved = repo.save("  Login token ", "abc.def.ghi ");
         assertEquals("Login token", saved.label());
         assertEquals("abc.def.ghi", saved.token());
-        assertTrue(repo.findById(saved.id()).isPresent());
+        assertEquals(List.of(saved), repo.findAll());
     }
 
     @Test
@@ -53,7 +53,7 @@ class InMemoryTokenRepositoryTest {
     void renamesAndDeletes() {
         SavedToken t = repo.save("old", "a.b.c");
         assertTrue(repo.rename(t.id(), "new"));
-        assertEquals("new", repo.findById(t.id()).get().label());
+        assertEquals("new", repo.findAll().get(0).label());
         assertFalse(repo.rename(t.id(), " "));
         assertTrue(repo.delete(t.id()));
         assertFalse(repo.delete(t.id()));

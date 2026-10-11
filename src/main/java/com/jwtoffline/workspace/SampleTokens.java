@@ -1,8 +1,9 @@
 package com.jwtoffline.workspace;
 
+import java.util.List;
+
 /**
- * Mock data for the prototype. All tokens are signed with the demo secret below,
- * so they can be used to try out the Verify screen.
+ * Sample tokens signed with DEMO_SECRET for testing the app.
  */
 public final class SampleTokens {
 
@@ -17,12 +18,13 @@ public final class SampleTokens {
     public static final String SERVICE_HS512 =
             "eyJraWQiOiJkZXYta2V5LTEiLCJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2F1dGgubG9jYWwudGVzdCIsInN1YiI6InN2Yy1wYXltZW50cyIsImF1ZCI6Im9yZGVycy1hcGkiLCJpYXQiOjE3NjcyMjU2MDAsIm5iZiI6MTc2NzIyNTYwMCwiZXhwIjoxOTI0OTkyMDAwfQ.aXTZVaZDIUJKTGJF3_3_Ejut9CO4ojqC1dbGas_vNjzAVmaUYNonI0Bg17q3x0IVM9jhD3YFIhbx9ijSU8HcPg";
 
-    /** label, token pairs loaded into the workspace on startup. */
-    public static final String[][] ALL = {
-            {"Expired QA bot token", EXPIRED_QA},
-            {"Payments service (HS512)", SERVICE_HS512},
-            {"Admin session, staging", ADMIN_SESSION},
-    };
+    public record SampleToken(String label, String token) {
+    }
+
+    public static final List<SampleToken> ALL = List.of(
+            new SampleToken("Expired QA bot token", EXPIRED_QA),
+            new SampleToken("Payments service (HS512)", SERVICE_HS512),
+            new SampleToken("Admin session, staging", ADMIN_SESSION));
 
     private SampleTokens() {
     }

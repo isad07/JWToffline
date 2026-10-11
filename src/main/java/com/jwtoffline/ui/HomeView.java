@@ -9,7 +9,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-/** Main menu: quick links to each tool and the recent token history. */
 class HomeView extends VBox {
 
     private final AppContext ctx;
@@ -17,12 +16,11 @@ class HomeView extends VBox {
 
     HomeView(AppContext ctx) {
         this.ctx = ctx;
-        setSpacing(14);
-        setPadding(new Insets(28));
+        Ui.setupScreen(this, 14);
 
         HBox cards = new HBox(14,
                 card("Decode a token", "Paste a JWT and read its header, payload and expiry.", Screen.DECODE),
-                card("Build a token", "Write claims, pick an algorithm and sign locally.", Screen.ENCODE),
+                card("Build a token", "Write claims, pick an algorithm and sign.", Screen.ENCODE),
                 card("Verify a signature", "Check a token with its secret or RSA public key.", Screen.VERIFY),
                 card("Workspace", "Saved tokens with labels, ready to reopen.", Screen.WORKSPACE));
 
@@ -38,9 +36,8 @@ class HomeView extends VBox {
 
         getChildren().addAll(
                 Ui.title("Welcome to JWTOffline"),
-                Ui.caption("Decode, build and verify JSON Web Tokens without a browser or an internet connection."),
                 cards,
-                Ui.sectionLabel("Recent tokens (double click to open)"),
+                Ui.sectionLabel("Recent tokens"),
                 recentList);
     }
 
@@ -48,9 +45,7 @@ class HomeView extends VBox {
         Label h = new Label(heading);
         h.getStyleClass().add("card-title");
         Label b = Ui.caption(body);
-        Button open = new Button("Open");
-        open.getStyleClass().add("primary");
-        open.setOnAction(e -> ctx.navigator().show(target));
+        Button open = Ui.button("Open", () -> ctx.navigator().show(target), "primary");
         VBox card = new VBox(8, h, b, open);
         card.getStyleClass().add("card");
         card.setPadding(new Insets(16));

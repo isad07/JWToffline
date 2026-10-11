@@ -1,6 +1,5 @@
 package com.jwtoffline.ui;
 
-/** Screens reachable from the side navigation. */
 public enum Screen {
     HOME("Home"),
     DECODE("Decode"),

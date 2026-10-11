@@ -19,7 +19,7 @@
 .mono { -fx-font-family: "Consolas", "Menlo", monospace; -fx-font-weight: bold; }
 .card { -fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e3e6eb; -fx-border-radius: 8; }
 .card-title { -fx-font-weight: bold; -fx-font-size: 14px; }
-.button { -fx-background-radius: 6; -fx-padding: 6 14; }
+.button { -fx-background-radius: 6; -fx-padding: 6 14; -fx-cursor: hand; }
 .primary { -fx-background-color: #3b5bdb; -fx-text-fill: white; }
 .danger { -fx-text-fill: #c92a2a; }
 .status { -fx-padding: 8 12; -fx-background-radius: 6; -fx-font-weight: bold; }

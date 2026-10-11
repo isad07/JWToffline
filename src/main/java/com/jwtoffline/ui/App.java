@@ -22,16 +22,16 @@ public class App extends Application implements AppContext.Navigator {
 
     private final BorderPane root = new BorderPane();
     private final Map<Screen, Button> navButtons = new EnumMap<>(Screen.class);
-    private AppContext context;
     private HomeView home;
     private DecodeView decode;
     private EncodeView encode;
     private VerifyView verify;
     private WorkspaceView workspace;
+    private Screen currentScreen;
 
     @Override
     public void start(Stage stage) {
-        context = new AppContext(this);
+        AppContext context = new AppContext(this);
         home = new HomeView(context);
         decode = new DecodeView(context);
         encode = new EncodeView(context);
@@ -53,10 +53,8 @@ public class App extends Application implements AppContext.Navigator {
     private VBox buildSidebar() {
         Label brand = new Label("JWTOffline");
         brand.getStyleClass().add("brand");
-        Label tagline = new Label("Nothing leaves this machine");
-        tagline.getStyleClass().add("tagline");
 
-        VBox side = new VBox(6, brand, tagline);
+        VBox side = new VBox(6, brand);
         side.getStyleClass().add("sidebar");
         side.setPadding(new Insets(20, 12, 20, 12));
         side.setPrefWidth(200);
@@ -76,23 +74,32 @@ public class App extends Application implements AppContext.Navigator {
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
-        Label offline = new Label("Offline mode  •  v0.2 prototype");
-        offline.getStyleClass().add("tagline");
-        side.getChildren().addAll(spacer, offline);
+        Label version = new Label("v0.1.0");
+        version.getStyleClass().add("tagline");
+        side.getChildren().addAll(spacer, version);
         return side;
     }
 
     @Override
     public void show(Screen screen) {
-        Node view;
-        switch (screen) {
-            case DECODE: view = decode; break;
-            case ENCODE: view = encode; break;
-            case VERIFY: view = verify; break;
-            case WORKSPACE: workspace.refresh(); view = workspace; break;
-            default: home.refresh(); view = home;
+        if (currentScreen == Screen.DECODE && screen != Screen.DECODE) {
+            decode.rememberCurrent();
         }
+        Node view = switch (screen) {
+            case DECODE -> decode;
+            case ENCODE -> encode;
+            case VERIFY -> verify;
+            case WORKSPACE -> {
+                workspace.refresh();
+                yield workspace;
+            }
+            case HOME -> {
+                home.refresh();
+                yield home;
+            }
+        };
         root.setCenter(view);
+        currentScreen = screen;
         navButtons.forEach((s, b) -> {
             b.getStyleClass().remove("nav-active");
             if (s == screen) {

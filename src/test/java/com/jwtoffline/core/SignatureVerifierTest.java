@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.security.KeyPair;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** US-3.1 to US-3.3 / FR-11 to FR-14 */
@@ -44,9 +45,9 @@ class SignatureVerifierTest {
 
     @Test
     void roundTripsRsaWithPublicKey() throws Exception {
-        KeyPair pair = JwtEncoderTest.rsaPair();
-        String priv = KeyParser.toPem(pair.getPrivate().getEncoded(), "PRIVATE KEY");
-        String pub = KeyParser.toPem(pair.getPublic().getEncoded(), "PUBLIC KEY");
+        KeyPair pair = TestKeys.rsaPair();
+        String priv = TestKeys.toPem(pair.getPrivate().getEncoded(), "PRIVATE KEY");
+        String pub = TestKeys.toPem(pair.getPublic().getEncoded(), "PUBLIC KEY");
         for (JwtAlgorithm alg : new JwtAlgorithm[]{JwtAlgorithm.RS256, JwtAlgorithm.RS384, JwtAlgorithm.RS512}) {
             String token = encoder.encode("{}", "{\"n\":1}", alg, priv);
             assertTrue(verifier.verify(token, pub).isValid(), alg.name());
@@ -55,8 +56,8 @@ class SignatureVerifierTest {
 
     @Test
     void rejectsRsaTokenWithOtherPublicKey() throws Exception {
-        String priv = KeyParser.toPem(JwtEncoderTest.rsaPair().getPrivate().getEncoded(), "PRIVATE KEY");
-        String otherPub = KeyParser.toPem(JwtEncoderTest.rsaPair().getPublic().getEncoded(), "PUBLIC KEY");
+        String priv = TestKeys.toPem(TestKeys.rsaPair().getPrivate().getEncoded(), "PRIVATE KEY");
+        String otherPub = TestKeys.toPem(TestKeys.rsaPair().getPublic().getEncoded(), "PUBLIC KEY");
         String token = encoder.encode("{}", "{}", JwtAlgorithm.RS256, priv);
         assertFalse(verifier.verify(token, otherPub).isValid());
     }
@@ -67,6 +68,16 @@ class SignatureVerifierTest {
         VerificationResult r = verifier.verify(unsigned, "anything");
         assertFalse(r.isValid());
         assertTrue(r.message().contains("none"));
+    }
+
+    @Test
+    void reportsMissingAlgorithmInsteadOfUnsignedToken() {
+        for (String header : List.of("{}", "{\"alg\":null}")) {
+            String token = Base64Url.encode(header) + ".e30.";
+            VerificationResult result = verifier.verify(token, "secret");
+            assertFalse(result.isValid());
+            assertEquals("Header has no \"alg\" value", result.message());
+        }
     }
 
     @Test
@@ -86,5 +97,31 @@ class SignatureVerifierTest {
     void reportsUnsupportedAlgorithm() {
         String es = Base64Url.encode("{\"alg\":\"ES256\"}") + "." + Base64Url.encode("{}") + ".abc";
         assertEquals("Unsupported algorithm: ES256", verifier.verify(es, "k").message());
+    }
+
+    @Test
+    void checksSignatureIndependentlyOfTimeClaims() {
+        // Expired, future nbf and future iat must not affect a signature-only check.
+        String token = encoder.encode("{}",
+                "{\"exp\":1,\"nbf\":4102444800,\"iat\":4102444800}", JwtAlgorithm.HS256, "secret");
+        assertTrue(verifier.verify(token, "secret").isValid());
+    }
+
+    @Test
+    void verifiesOriginalBytesWithoutReformattingJson() {
+        String input = Base64Url.encode("{ \"typ\" : \"JWT\", \"alg\" : \"HS256\" }") + "."
+                + Base64Url.encode("{\n  \"custom\": [null, {\"text\": \"<tag>&é\"}]\n}");
+        byte[] signature = com.auth0.jwt.algorithms.Algorithm.HMAC256("secret")
+                .sign(input.getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        assertTrue(verifier.verify(input + "." + Base64Url.encode(signature), "secret").isValid());
+    }
+
+    @Test
+    void allowsInspectingMalformedDateClaimsButReportsVerificationError() {
+        String token = encoder.encode("{}", "{\"exp\":\"not a date\"}", JwtAlgorithm.HS256, "secret");
+        assertEquals("not a date", new JwtDecoder().decode(token).payload().get("exp"));
+        VerificationResult result = verifier.verify(token, "secret");
+        assertFalse(result.isValid());
+        assertTrue(result.message().startsWith("Could not verify:"));
     }
 }
