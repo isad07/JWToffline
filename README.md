@@ -30,8 +30,6 @@ mvn clean verify    # clean build, tests, coverage report, and JAR
 
 Sample tokens in the Workspace are signed with the secret `jwtoffline-demo-secret`, so you can try Verify straight away.
 
-See the [verification results](docs/testing.md) and [app screenshots](docs/README.md#app-screenshots-v010).
-
 ## Tech Stack
 
 - **Language:** Java

@@ -1,12 +1,15 @@
 # Documentation
 
-This directory contains all project documentation for JWTOffline.
+## Deliverable 1.2
 
-## Documents
+- [Report](deliverable-1.2/Deliverable_1_2_JWTOffline.pdf)
+- [Architecture diagram](deliverable-1.2/architecture.png)
+- [Use case diagram](deliverable-1.2/usecase.png)
 
-| Document | Description | Status |
-|----------|-------------|--------|
-| Deliverable 1.1 | Initial Vision and Planning | Complete |
-| Deliverable 1.2 | Requirements, Use Cases, User Stories, Initial Prototype | Complete (tag ITR1.2) |
-| Deliverable 2.1 | Testing Document | Upcoming |
-| Deliverable 2.2 | Full Documentation, Prototype, Presentation | Upcoming |
+## Wireframes
+
+- [Home](deliverable-1.2/wf_home.png)
+- [Decode](deliverable-1.2/wf_decode.png)
+- [Encode](deliverable-1.2/wf_encode.png)
+- [Verify](deliverable-1.2/wf_verify.png)
+- [Workspace](deliverable-1.2/wf_workspace.png)
