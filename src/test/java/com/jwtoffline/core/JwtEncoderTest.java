@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import org.junit.jupiter.api.Test;
 
 /** US-2.1 to US-2.3 / FR-7 to FR-10 */
@@ -40,8 +39,8 @@ class JwtEncoderTest {
 
     @Test
     void signsWithRsaPrivateKey() throws Exception {
-        KeyPair pair = rsaPair();
-        String privatePem = KeyParser.toPem(pair.getPrivate().getEncoded(), "PRIVATE KEY");
+        KeyPair pair = TestKeys.rsaPair();
+        String privatePem = TestKeys.toPem(pair.getPrivate().getEncoded(), "PRIVATE KEY");
         String token = encoder.encode("{}", "{\"role\":\"admin\"}", JwtAlgorithm.RS256, privatePem);
         assertEquals("RS256", decoder.decode(token).header().get("alg"));
         assertEquals(3, token.split("\\.").length);
@@ -67,9 +66,16 @@ class JwtEncoderTest {
                 () -> encoder.encode("{}", "{}", JwtAlgorithm.RS256, "not a key"));
     }
 
-    static KeyPair rsaPair() throws Exception {
-        KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-        gen.initialize(2048);
-        return gen.generateKeyPair();
+    @Test
+    void signsWithoutRoundingHeaderOrPayloadNumbers() {
+        String header = "{\"custom\":0.1234567890123456789}";
+        String payload = "{\"amount\":12345.67890123456789,\"n\":9223372036854775808}";
+        String token = encoder.encode(header, payload, JwtAlgorithm.HS256, "secret");
+        String[] parts = token.split("\\.");
+        assertEquals("{\"custom\":0.1234567890123456789,\"alg\":\"HS256\",\"typ\":\"JWT\"}",
+                Base64Url.decodeToString(parts[0]));
+        assertEquals(payload, Base64Url.decodeToString(parts[1]));
+        assertTrue(new SignatureVerifier().verify(token, "secret").isValid());
     }
+
 }

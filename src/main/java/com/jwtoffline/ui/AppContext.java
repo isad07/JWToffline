@@ -8,7 +8,6 @@ import com.jwtoffline.workspace.InMemoryTokenRepository;
 import com.jwtoffline.workspace.TokenHistory;
 import com.jwtoffline.workspace.TokenRepository;
 
-/** Shared services handed to every screen. Keeps the views free of construction logic. */
 public final class AppContext {
 
     public final JwtDecoder decoder = new JwtDecoder();

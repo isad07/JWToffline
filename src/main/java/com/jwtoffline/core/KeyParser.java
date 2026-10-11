@@ -1,55 +1,62 @@
 package com.jwtoffline.core;
 
-import java.security.KeyFactory;
+import java.io.StringReader;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 
-/** Reads RSA keys from PEM text (PKCS#8 private keys and X.509 / SPKI public keys). */
+/** Reads RSA keys from PKCS#1, PKCS#8 and SPKI PEM blocks. */
 public final class KeyParser {
-
     private KeyParser() {
     }
 
     public static PublicKey publicKey(String pem) {
         try {
-            byte[] der = stripPem(pem, "PUBLIC KEY");
-            return KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(der));
+            PublicKey key = new JcaPEMKeyConverter().getPublicKey((SubjectPublicKeyInfo) read(pem));
+            if (key instanceof RSAPublicKey) {
+                return key;
+            }
         } catch (JwtException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new JwtException("Could not read the RSA public key. Paste a PEM block that starts with -----BEGIN PUBLIC KEY-----", ex);
+            throw new JwtException("Could not read the RSA public key. Paste a PUBLIC KEY or RSA PUBLIC KEY PEM block", ex);
         }
+        throw new JwtException("The public key must be an RSA key");
     }
 
     public static PrivateKey privateKey(String pem) {
         try {
-            byte[] der = stripPem(pem, "PRIVATE KEY");
-            return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(der));
+            Object parsed = read(pem);
+            PrivateKeyInfo info = parsed instanceof PEMKeyPair pair
+                    ? pair.getPrivateKeyInfo() : (PrivateKeyInfo) parsed;
+            PrivateKey key = new JcaPEMKeyConverter().getPrivateKey(info);
+            if (key instanceof RSAPrivateKey) {
+                return key;
+            }
         } catch (JwtException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new JwtException("Could not read the RSA private key. Paste a PKCS#8 PEM block that starts with -----BEGIN PRIVATE KEY-----", ex);
+            throw new JwtException("Could not read the RSA private key. Paste an unencrypted PRIVATE KEY or RSA PRIVATE KEY PEM block", ex);
         }
+        throw new JwtException("The private key must be an RSA key");
     }
 
-    public static String toPem(byte[] der, String type) {
-        String body = Base64.getMimeEncoder(64, "\n".getBytes()).encodeToString(der);
-        return "-----BEGIN " + type + "-----\n" + body + "\n-----END " + type + "-----\n";
-    }
-
-    private static byte[] stripPem(String pem, String type) {
+    private static Object read(String pem) throws Exception {
         if (pem == null || pem.isBlank()) {
             throw new JwtException("Key is empty");
         }
-        if (pem.contains("RSA " + type)) {
-            throw new JwtException("PKCS#1 keys (BEGIN RSA " + type + ") are not supported yet, convert to PKCS#8 / SPKI first");
+        try (PEMParser parser = new PEMParser(new StringReader(pem))) {
+            Object key = parser.readObject();
+            if (key == null) {
+                throw new JwtException("No PEM key found");
+            }
+            return key;
         }
-        String body = pem.replaceAll("-----BEGIN [A-Z ]+-----", "")
-                .replaceAll("-----END [A-Z ]+-----", "")
-                .replaceAll("\\s", "");
-        return Base64.getDecoder().decode(body);
     }
 }

@@ -19,6 +19,15 @@ class TokenHistoryTest {
     }
 
     @Test
+    void deduplicatesBearerAndRawTokens() {
+        TokenHistory history = new TokenHistory();
+        history.add("  Bearer a.b.c\n");
+        history.add("a.b.c");
+        history.add("  bEaReR   a.b.c  ");
+        assertEquals(List.of("a.b.c"), history.recent());
+    }
+
+    @Test
     void dropsOldestPastLimit() {
         TokenHistory h = new TokenHistory(2);
         h.add("1");
@@ -28,14 +37,11 @@ class TokenHistoryTest {
     }
 
     @Test
-    void ignoresBlankAndClears() {
+    void ignoresBlankTokens() {
         TokenHistory h = new TokenHistory();
         h.add("  ");
         h.add(null);
-        assertEquals(0, h.size());
-        h.add("x");
-        h.clear();
-        assertEquals(0, h.size());
+        assertEquals(List.of(), h.recent());
     }
 
     @Test

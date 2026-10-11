@@ -1,5 +1,6 @@
 package com.jwtoffline.workspace;
 
+import com.jwtoffline.core.JwtDecoder;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -25,10 +26,10 @@ public class TokenHistory {
     }
 
     public void add(String token) {
-        if (token == null || token.isBlank()) {
+        String t = JwtDecoder.normalizeToken(token);
+        if (t.isBlank()) {
             return;
         }
-        String t = token.trim();
         recent.remove(t);
         recent.addFirst(t);
         while (recent.size() > limit) {
@@ -40,11 +41,4 @@ public class TokenHistory {
         return new ArrayList<>(recent);
     }
 
-    public void clear() {
-        recent.clear();
-    }
-
-    public int size() {
-        return recent.size();
-    }
 }

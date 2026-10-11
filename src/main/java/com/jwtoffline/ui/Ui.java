@@ -1,14 +1,38 @@
 package com.jwtoffline.ui;
 
+import javafx.geometry.Insets;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.VBox;
 
-/** Small helpers so every screen builds controls the same way. */
 final class Ui {
 
+    enum StatusKind {
+        OK("status-ok"), BAD("status-bad"), WARN("status-warn");
+
+        private final String styleClass;
+
+        StatusKind(String styleClass) {
+            this.styleClass = styleClass;
+        }
+    }
+
     private Ui() {
+    }
+
+    static void setupScreen(VBox screen, double spacing) {
+        screen.setSpacing(spacing);
+        screen.setPadding(new Insets(28));
+    }
+
+    static Button button(String text, Runnable action, String... styles) {
+        Button button = new Button(text);
+        button.getStyleClass().addAll(styles);
+        button.setOnAction(e -> action.run());
+        return button;
     }
 
     static Label title(String text) {
@@ -49,10 +73,10 @@ final class Ui {
         return l;
     }
 
-    static void setStatus(Label label, String text, String kind) {
+    static void setStatus(Label label, String text, StatusKind kind) {
         label.setText(text);
         label.getStyleClass().removeAll("status-ok", "status-bad", "status-warn");
-        label.getStyleClass().add("status-" + kind);
+        label.getStyleClass().add(kind.styleClass);
         label.setVisible(true);
         label.setManaged(true);
     }

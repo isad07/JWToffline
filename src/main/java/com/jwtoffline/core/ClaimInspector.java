@@ -1,21 +1,25 @@
 package com.jwtoffline.core;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Clock;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-/** Turns the standard time claims (exp, iat, nbf) into readable dates and works out whether a token is still valid. */
+/** Inspects the standard time claims (exp, iat, nbf) without checking the signature. */
 public class ClaimInspector {
 
-    public enum Status { VALID, EXPIRED, NOT_YET_VALID, NO_EXPIRY }
+    public enum Status { VALID, EXPIRED, NOT_YET_VALID, NO_EXPIRY, INVALID_TIME_CLAIM }
 
-    public static final String[] TIME_CLAIMS = {"exp", "iat", "nbf"};
-
+    private static final List<String> TIME_CLAIMS = List.of("exp", "iat", "nbf");
     private static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
-
     private final Clock clock;
 
     public ClaimInspector() {
@@ -26,45 +30,47 @@ public class ClaimInspector {
         this.clock = clock;
     }
 
-    public Status status(Map<String, Object> payload) {
-        long now = clock.instant().getEpochSecond();
-        Long nbf = epochSeconds(payload.get("nbf"));
-        if (nbf != null && now < nbf) {
-            return Status.NOT_YET_VALID;
+    public record Inspection(Status status, String message, Map<String, String> readableTimes) {
+        public Inspection {
+            readableTimes = Collections.unmodifiableMap(new LinkedHashMap<>(readableTimes));
         }
-        Long exp = epochSeconds(payload.get("exp"));
-        if (exp == null) {
-            return Status.NO_EXPIRY;
-        }
-        return now >= exp ? Status.EXPIRED : Status.VALID;
     }
 
-    /** Readable version of each time claim that is present, in the order exp, iat, nbf. */
-    public Map<String, String> readableTimes(Map<String, Object> payload) {
-        Map<String, String> out = new LinkedHashMap<>();
-        ZoneId zone = clock.getZone();
+    public Inspection inspect(Map<String, Object> payload) {
+        Map<String, Long> seconds = new LinkedHashMap<>();
+        Map<String, String> times = new LinkedHashMap<>();
+        String invalidClaim = null;
         for (String claim : TIME_CLAIMS) {
-            Long seconds = epochSeconds(payload.get(claim));
-            if (seconds != null) {
-                out.put(claim, FORMAT.format(Instant.ofEpochSecond(seconds).atZone(zone)));
+            if (!payload.containsKey(claim)) {
+                continue;
+            }
+            ZonedDateTime date = timestamp(payload.get(claim), clock.getZone());
+            if (date == null) {
+                if (invalidClaim == null) invalidClaim = claim;
+                times.put(claim, "Invalid timestamp");
+            } else {
+                seconds.put(claim, date.toEpochSecond());
+                times.put(claim, FORMAT.format(date));
             }
         }
-        return out;
-    }
-
-    /** Short human sentence for the status banner, e.g. "Expired 3 hours ago". */
-    public String describe(Map<String, Object> payload) {
         long now = clock.instant().getEpochSecond();
-        switch (status(payload)) {
-            case EXPIRED:
-                return "Expired " + humanDuration(now - epochSeconds(payload.get("exp"))) + " ago";
-            case VALID:
-                return "Valid, expires in " + humanDuration(epochSeconds(payload.get("exp")) - now);
-            case NOT_YET_VALID:
-                return "Not valid yet, starts in " + humanDuration(epochSeconds(payload.get("nbf")) - now);
-            default:
-                return "No expiry set (exp claim missing)";
-        }
+        Long exp = seconds.get("exp");
+        Long nbf = seconds.get("nbf");
+        Status status;
+        if (invalidClaim != null) status = Status.INVALID_TIME_CLAIM;
+        else if (nbf != null && now < nbf) status = Status.NOT_YET_VALID;
+        else if (exp == null) status = Status.NO_EXPIRY;
+        else status = now >= exp ? Status.EXPIRED : Status.VALID;
+
+        String message = switch (status) {
+            case EXPIRED -> "Expired " + humanDuration(now - exp) + " ago";
+            case VALID -> "Expires in " + humanDuration(exp - now);
+            case NOT_YET_VALID -> "Starts in " + humanDuration(nbf - now);
+            case INVALID_TIME_CLAIM -> "Invalid " + invalidClaim
+                    + ": expected numeric seconds within the supported date range";
+            case NO_EXPIRY -> "No expiry set (exp claim missing)";
+        };
+        return new Inspection(status, message, times);
     }
 
     static String humanDuration(long seconds) {
@@ -78,10 +84,15 @@ public class ClaimInspector {
         return days + " days";
     }
 
-    private static Long epochSeconds(Object value) {
-        if (value instanceof Number) {
-            return ((Number) value).longValue();
+    private static ZonedDateTime timestamp(Object value, ZoneId zone) {
+        if (!(value instanceof Number number)) {
+            return null;
         }
-        return null;
+        try {
+            long seconds = new BigDecimal(number.toString()).setScale(0, RoundingMode.FLOOR).longValueExact();
+            return Instant.ofEpochSecond(seconds).atZone(zone);
+        } catch (DateTimeException | ArithmeticException | NumberFormatException ex) {
+            return null;
+        }
     }
 }

@@ -3,7 +3,6 @@ package com.jwtoffline.ui;
 import com.jwtoffline.core.JwtAlgorithm;
 import com.jwtoffline.core.JwtException;
 import java.time.Instant;
-import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -12,42 +11,47 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-/** Encode screen: header + payload JSON, an algorithm and a key, out comes a signed token. */
 class EncodeView extends VBox {
 
     private final AppContext ctx;
     private final TextArea headerIn = Ui.codeArea("{ \"kid\": \"optional\" }", 5, true);
     private final TextArea payloadIn = Ui.codeArea("{ \"sub\": \"1234\" }", 9, true);
     private final ComboBox<JwtAlgorithm> algorithm = new ComboBox<>();
-    private final TextArea keyIn = Ui.codeArea("Secret for HS*, or PKCS#8 PEM private key for RS*", 3, true);
+    private final TextArea keyIn = Ui.codeArea("Secret for HS*, or PKCS#1 / PKCS#8 PEM private key for RS*", 3, true);
     private final TextArea output = Ui.codeArea("Your signed token appears here", 4, false);
     private final Label status = Ui.status();
 
     EncodeView(AppContext ctx) {
         this.ctx = ctx;
-        setSpacing(12);
-        setPadding(new Insets(28));
+        Ui.setupScreen(this, 12);
 
         long now = Instant.now().getEpochSecond();
-        headerIn.setText("{\n  \"typ\": \"JWT\"\n}");
-        payloadIn.setText("{\n  \"sub\": \"user-123\",\n  \"name\": \"Test User\",\n  \"role\": \"tester\",\n  \"iat\": " + now
-                + ",\n  \"exp\": " + (now + 3600) + "\n}");
+        headerIn.setText("""
+                {
+                  "typ": "JWT"
+                }""");
+        payloadIn.setText("""
+                {
+                  "sub": "user-123",
+                  "name": "Test User",
+                  "role": "tester",
+                  "iat": %d,
+                  "exp": %d
+                }""".formatted(now, now + 3600));
 
         algorithm.getItems().setAll(JwtAlgorithm.values());
         algorithm.setValue(JwtAlgorithm.HS256);
-        algorithm.valueProperty().addListener((o, a, b) -> Ui.hideStatus(status));
+        algorithm.valueProperty().addListener((o, a, b) -> clearResult());
+        for (TextArea input : new TextArea[]{headerIn, payloadIn, keyIn}) {
+            input.textProperty().addListener((o, a, b) -> clearResult());
+        }
 
-        Button generate = new Button("Generate token");
-        generate.getStyleClass().add("primary");
-        generate.setOnAction(e -> generate());
-        Button copy = new Button("Copy token");
-        copy.setOnAction(e -> Ui.copy(output.getText()));
-        Button openDecoder = new Button("Open in decoder");
-        openDecoder.setOnAction(e -> {
-            if (!output.getText().isBlank()) {
-                ctx.navigator().openInDecoder(output.getText());
-            }
-        });
+        Button generate = Ui.button("Generate token", this::generate, "primary");
+        Button copy = Ui.button("Copy token", () -> Ui.copy(output.getText()));
+        copy.disableProperty().bind(output.textProperty().isEmpty());
+        Button openDecoder = Ui.button("Open in decoder",
+                () -> ctx.navigator().openInDecoder(output.getText()));
+        openDecoder.disableProperty().bind(output.textProperty().isEmpty());
 
         VBox left = new VBox(6, Ui.sectionLabel("Header (alg is set for you)"), headerIn,
                 Ui.sectionLabel("Payload"), payloadIn);
@@ -61,8 +65,13 @@ class EncodeView extends VBox {
         HBox body = new HBox(14, left, right);
         VBox.setVgrow(body, Priority.ALWAYS);
 
-        getChildren().addAll(Ui.title("Encode"), Ui.caption("Build a test token. Signing happens locally, your key never leaves this window."),
+        getChildren().addAll(Ui.title("Encode"),
                 body, status, Ui.sectionLabel("Signed token"), output);
+    }
+
+    private void clearResult() {
+        output.clear();
+        Ui.hideStatus(status);
     }
 
     private void generate() {
@@ -70,10 +79,10 @@ class EncodeView extends VBox {
             String token = ctx.encoder.encode(headerIn.getText(), payloadIn.getText(), algorithm.getValue(), keyIn.getText());
             output.setText(token);
             ctx.history.add(token);
-            Ui.setStatus(status, "Token signed with " + algorithm.getValue().name(), "ok");
+            Ui.setStatus(status, "Token signed with " + algorithm.getValue().name(), Ui.StatusKind.OK);
         } catch (JwtException ex) {
             output.clear();
-            Ui.setStatus(status, ex.getMessage(), "bad");
+            Ui.setStatus(status, ex.getMessage(), Ui.StatusKind.BAD);
         }
     }
 }

@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 /** US-1.1, US-1.2, US-1.4 / FR-1 to FR-4 */
@@ -70,5 +72,41 @@ class JwtDecoderTest {
         DecodedJwt jwt = decoder.decode(unsigned);
         assertEquals("none", jwt.algorithmName());
         assertEquals("", jwt.signatureSegment());
+    }
+
+    @Test
+    void distinguishesMissingAlgorithmFromNone() {
+        for (String header : List.of("{}", "{\"alg\":null}")) {
+            DecodedJwt jwt = decoder.decode(Base64Url.encode(header) + ".e30.");
+            assertEquals("(missing)", jwt.algorithmName());
+        }
+    }
+
+    @Test
+    void protectsNestedHeaderAndPayloadValues() {
+        String json = "{\"nested\":{\"items\":[null,{\"value\":1}]}}";
+        DecodedJwt jwt = decoder.decode(Base64Url.encode(json) + "." + Base64Url.encode(json) + ".");
+        for (Map<String, Object> values : List.of(jwt.header(), jwt.payload())) {
+            Map<?, ?> nested = (Map<?, ?>) values.get("nested");
+            List<?> items = (List<?>) nested.get("items");
+            assertThrows(UnsupportedOperationException.class, values::clear);
+            assertThrows(UnsupportedOperationException.class, nested::clear);
+            assertThrows(UnsupportedOperationException.class, items::clear);
+            assertThrows(UnsupportedOperationException.class, ((Map<?, ?>) items.get(1))::clear);
+            assertEquals(json, Json.compact(values));
+        }
+    }
+
+    @Test
+    void snapshotsNestedValuesFromConstructorInputs() {
+        String json = "{\"nested\":{\"items\":[null,{\"value\":1}]}}";
+        Map<String, Object> source = Json.parseObject(json);
+        DecodedJwt jwt = new DecodedJwt("e30.e30.", "", source, source);
+        Map<?, ?> nested = (Map<?, ?>) source.get("nested");
+        ((List<?>) nested.get("items")).clear();
+        nested.clear();
+        source.clear();
+        assertEquals(json, Json.compact(jwt.header()));
+        assertEquals(json, Json.compact(jwt.payload()));
     }
 }

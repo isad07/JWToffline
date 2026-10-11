@@ -7,11 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-/** Stub repository for the prototype. Data lives only while the app is open. */
+/** Stores tokens for the current session. */
 public class InMemoryTokenRepository implements TokenRepository {
 
     private final Map<String, SavedToken> tokens = new LinkedHashMap<>();
@@ -25,11 +23,10 @@ public class InMemoryTokenRepository implements TokenRepository {
         this.clock = clock;
     }
 
-    /** Repository pre loaded with sample tokens so the workspace screen has something to show. */
     public static InMemoryTokenRepository withSampleData() {
         InMemoryTokenRepository repo = new InMemoryTokenRepository();
-        for (String[] sample : SampleTokens.ALL) {
-            repo.save(sample[0], sample[1]);
+        for (SampleTokens.SampleToken sample : SampleTokens.ALL) {
+            repo.save(sample.label(), sample.token());
         }
         return repo;
     }
@@ -53,11 +50,6 @@ public class InMemoryTokenRepository implements TokenRepository {
     }
 
     @Override
-    public Optional<SavedToken> findById(String id) {
-        return Optional.ofNullable(tokens.get(id));
-    }
-
-    @Override
     public List<SavedToken> search(String text) {
         if (text == null || text.isBlank()) {
             return findAll();
@@ -65,7 +57,7 @@ public class InMemoryTokenRepository implements TokenRepository {
         String needle = text.toLowerCase(Locale.ROOT);
         return findAll().stream()
                 .filter(t -> t.label().toLowerCase(Locale.ROOT).contains(needle))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
