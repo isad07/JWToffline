@@ -64,6 +64,7 @@ JWTOffline/
 - Isa Din
 - Steven Passynkov
 - Osmond Jiang
+- Saeed Rafieepour
 
 **Course:** DIGT2107 - Practice of Software Development  
 **Instructor:** Dr. May Haidar  
