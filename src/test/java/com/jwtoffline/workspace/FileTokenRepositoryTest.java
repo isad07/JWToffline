@@ -3,6 +3,8 @@ package com.jwtoffline.workspace;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.jwtoffline.core.JwtException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,6 +23,40 @@ class FileTokenRepositoryTest {
 
     private Path file() {
         return dir.resolve("workspace.json");
+    }
+
+    @Test
+    void failedWritesPreserveTokensAndAllowRetry() throws Exception {
+        Path parent = dir.resolve("storage");
+        Path moved = dir.resolve("storage-backup");
+        Path workspace = parent.resolve("workspace.json");
+        FileTokenRepository repo = new FileTokenRepository(workspace);
+        SavedToken saved = repo.save("original", "a.b.c");
+        String originalFile = Files.readString(workspace);
+        Files.move(parent, moved);
+        Files.writeString(parent, "block directory creation");
+
+        assertThrows(JwtException.class, () -> repo.save("new", "d.e.f"));
+        assertEquals(List.of(saved), repo.findAll());
+        assertThrows(JwtException.class, () -> repo.rename(saved.id(), "changed"));
+        assertEquals(List.of(saved), repo.findAll());
+        assertThrows(JwtException.class, () -> repo.delete(saved.id()));
+        assertEquals(List.of(saved), repo.findAll());
+        assertEquals(originalFile, Files.readString(moved.resolve("workspace.json")));
+
+        Files.delete(parent);
+        Files.move(moved, parent);
+        assertTrue(repo.rename(saved.id(), "retried"));
+        assertEquals("retried", new FileTokenRepository(workspace).findAll().get(0).label());
+    }
+
+    @Test
+    void initialWriteFailureProducesWarningInsteadOfStoppingStartup() throws Exception {
+        Path blocked = dir.resolve("not-a-directory");
+        Files.writeString(blocked, "block directory creation");
+        FileTokenRepository repo = new FileTokenRepository(blocked.resolve("workspace.json"), true, Clock.systemUTC());
+        assertTrue(repo.findAll().isEmpty());
+        assertTrue(repo.loadWarning().orElseThrow().contains("Could not create the initial workspace"));
     }
 
     @Test

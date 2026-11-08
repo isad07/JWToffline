@@ -18,6 +18,15 @@ class JwtDecoderTest {
     private final JwtDecoder decoder = new JwtDecoder();
 
     @Test
+    void describesAlgorithmAndSignatureLength() {
+        assertEquals("Algorithm: HS256   Signature: 43 chars", decoder.decode(JWT_IO).signatureDescription());
+        assertEquals("Algorithm: none   Signature: none",
+                decoder.decode(Base64Url.encode("{\"alg\":\"none\"}") + ".e30.").signatureDescription());
+        assertEquals("Algorithm: (missing)   Signature: 3 chars",
+                decoder.decode("e30.e30.sig").signatureDescription());
+    }
+
+    @Test
     void decodesHeaderAndPayload() {
         DecodedJwt jwt = decoder.decode(JWT_IO);
         assertEquals("HS256", jwt.header().get("alg"));

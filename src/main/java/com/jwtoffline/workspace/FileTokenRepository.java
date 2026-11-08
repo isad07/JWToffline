@@ -39,7 +39,11 @@ public class FileTokenRepository extends InMemoryTokenRepository {
         if (Files.exists(file)) {
             load();
         } else if (seedSamples) {
-            addSamples();
+            try {
+                addSamples();
+            } catch (JwtException ex) {
+                loadWarning = "Could not create the initial workspace. " + ex.getMessage();
+            }
         }
     }
 
@@ -68,18 +72,26 @@ public class FileTokenRepository extends InMemoryTokenRepository {
         for (SavedToken t : findAll()) {
             entries.add(new Entry(t.id(), t.label(), t.token(), t.savedAt().toString()));
         }
+        Path tmp = null;
         try {
             Path parent = file.toAbsolutePath().getParent();
             Files.createDirectories(parent);
-            Path tmp = Files.createTempFile(parent, "workspace", ".tmp");
+            tmp = Files.createTempFile(parent, "workspace", ".tmp");
             Files.writeString(tmp, GSON.toJson(entries), StandardCharsets.UTF_8);
             try {
                 Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             } catch (AtomicMoveNotSupportedException ex) {
                 Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
             }
-        } catch (IOException ex) {
+        } catch (IOException | SecurityException ex) {
             throw new JwtException("Could not save the workspace to " + file + ": " + ex.getMessage(), ex);
+        } finally {
+            if (tmp != null) {
+                try {
+                    Files.deleteIfExists(tmp);
+                } catch (IOException | SecurityException ignored) {
+                }
+            }
         }
     }
 

@@ -4,6 +4,7 @@ import com.jwtoffline.core.ClaimInspector;
 import com.jwtoffline.core.DecodedJwt;
 import com.jwtoffline.core.JwtException;
 import com.jwtoffline.workspace.SavedToken;
+import com.jwtoffline.workspace.FileTokenRepository;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -59,6 +60,9 @@ class WorkspaceView extends VBox {
 
         getChildren().addAll(Ui.title("Workspace"),
                 top, table, new HBox(8, open, rename, delete), status);
+        if (ctx.repository instanceof FileTokenRepository repository) {
+            repository.loadWarning().ifPresent(message -> Ui.setStatus(status, message, Ui.StatusKind.WARN));
+        }
     }
 
     private static TableColumn<TokenRow, String> column(String title, double width, Function<TokenRow, String> value) {
@@ -112,20 +116,28 @@ class WorkspaceView extends VBox {
         dialog.setHeaderText(null);
         dialog.setContentText("New label:");
         dialog.showAndWait().ifPresent(newLabel -> {
-            if (ctx.repository.rename(s.id(), newLabel)) {
-                refresh();
-                Ui.setStatus(status, "Renamed", Ui.StatusKind.OK);
-            } else {
-                Ui.setStatus(status, "Label cannot be empty", Ui.StatusKind.WARN);
+            try {
+                if (ctx.repository.rename(s.id(), newLabel)) {
+                    refresh();
+                    Ui.setStatus(status, "Renamed", Ui.StatusKind.OK);
+                } else {
+                    Ui.setStatus(status, "Label cannot be empty", Ui.StatusKind.WARN);
+                }
+            } catch (JwtException ex) {
+                Ui.setStatus(status, ex.getMessage(), Ui.StatusKind.BAD);
             }
         });
     }
 
     private void delete() {
         SavedToken s = selected();
-        if (s != null && ctx.repository.delete(s.id())) {
-            refresh();
-            Ui.setStatus(status, "Deleted \"" + s.label() + "\"", Ui.StatusKind.OK);
+        try {
+            if (s != null && ctx.repository.delete(s.id())) {
+                refresh();
+                Ui.setStatus(status, "Deleted \"" + s.label() + "\"", Ui.StatusKind.OK);
+            }
+        } catch (JwtException ex) {
+            Ui.setStatus(status, ex.getMessage(), Ui.StatusKind.BAD);
         }
     }
 }

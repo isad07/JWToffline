@@ -1,6 +1,6 @@
 # JWTOffline Test Cases (ITR2.1)
 
-Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pending (automated, waiting for first CI run), Not run (manual).
+Updated after local verification on November 8, 2026 (Windows, JDK 17). mvn -o verify: BUILD SUCCESS; 94 tests, zero failures, errors, or skips. These are local results, not a new CI run. Manual checks remain Not run. The PDF remains the original deliverable snapshot.
 
 | ID | Title | Req | Type | Automated by | Status | Priority |
 |---|---|---|---|---|---|---|
@@ -12,7 +12,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 | TC-006 | Bad Base64URL in the header is reported | FR-4 | Unit | `JwtDecoderTest#rejectsBadBase64` | Pass | High |
 | TC-007 | Payload that is not JSON is reported | FR-4 | Unit | `JwtDecoderTest#rejectsPayloadThatIsNotJson`<br>`JsonTest#rejectsBrokenJson`<br>`JsonTest#rejectsLenientJsonSyntax` | Pass | High |
 | TC-008 | Claim values are shown exactly as sent | FR-3 | Unit | `JsonTest#preservesLargeIntegerClaims`<br>`JsonTest#preservesPreciseDecimalClaims`<br>`JsonTest#preservesIntegersBeyondLongRange`<br>`JsonTest#preservesNullClaimsAndDoesNotHtmlEscapeValues`<br>`JwtDecoderTest#protectsNestedHeaderAndPayloadValues`<br>`JwtDecoderTest#snapshotsNestedValuesFromConstructorInputs` | Pass | Medium |
-| TC-009 | Signing algorithm is read from the header | FR-7 | Unit | `JwtDecoderTest#allowsUnsignedTokenWithEmptySignature`<br>`JwtDecoderTest#distinguishesMissingAlgorithmFromNone` | Pass | Medium |
+| TC-009 | Signing algorithm and encoded signature length are reported | FR-7 | Unit | `JwtDecoderTest#allowsUnsignedTokenWithEmptySignature`<br>`JwtDecoderTest#describesAlgorithmAndSignatureLength`<br>`JwtDecoderTest#distinguishesMissingAlgorithmFromNone` | Pass | Medium |
 | TC-010 | Copy header, payload, and generated token | FR-8 | Manual UI | `Manual` | Not run | Medium |
 | TC-011 | Token with a future exp shows as valid | FR-6 | Unit | `ClaimInspectorTest#validWhenExpInFuture` | Pass | High |
 | TC-012 | Token past exp shows as expired | FR-6 | Unit | `ClaimInspectorTest#expiredWhenExpInPast`<br>`ClaimInspectorTest#expiredExactlyAtExp` | Pass | High |
@@ -24,7 +24,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 | TC-018 | Encoder reproduces a known HS256 token | FR-11 | Unit | `JwtEncoderTest#reproducesKnownHs256Token` | Pass | High |
 | TC-019 | alg and typ are set from the chosen algorithm | FR-10, NFR-4 | Unit | `JwtEncoderTest#setsAlgAndTypAutomatically`<br>`JwtEncoderTest#headerAlgIsOverriddenBySelectedAlgorithm` | Pass | High |
 | TC-020 | All six algorithms sign and verify | FR-10, FR-11, FR-14 | Unit | `SignatureVerifierTest#roundTripsAllHmacAlgorithms`<br>`SignatureVerifierTest#roundTripsRsaWithPublicKey`<br>`JwtEncoderTest#signsWithRsaPrivateKey` | Pass | High |
-| TC-021 | Invalid JSON is caught before signing | FR-9 | Unit | `JwtEncoderTest#rejectsInvalidPayloadJson` | Pass | High |
+| TC-021 | Invalid JSON is caught before signing | FR-9 | Unit | `JwtEncoderTest#rejectsInvalidHeaderJsonWithPosition`<br>`JwtEncoderTest#rejectsInvalidPayloadJson` | Pass | High |
 | TC-022 | Missing or unusable keys are explained | FR-11 | Unit | `JwtEncoderTest#rejectsMissingKey`<br>`JwtEncoderTest#rejectsGarbageRsaKey`<br>`KeyParserTest#reportsMissingAndMalformedKeys`<br>`KeyParserTest#rejectsNonRsaKeys`<br>`KeyParserTest#rejectsPublicKeyWherePrivateKeyIsRequired` | Pass | High |
 | TC-023 | PKCS#1 RSA private keys are accepted | FR-11 | Unit | `KeyParserTest#readsPkcs1KeysAndUsesThemForRsaSigning` | Pass | Medium |
 | TC-024 | Numbers in claims are not rounded when signing | FR-11 | Unit | `JwtEncoderTest#signsWithoutRoundingHeaderOrPayloadNumbers` | Pass | Medium |
@@ -38,31 +38,32 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 | TC-032 | Signature check is separate from expiry | FR-15 | Unit | `SignatureVerifierTest#checksSignatureIndependentlyOfTimeClaims`<br>`SignatureVerifierTest#allowsInspectingMalformedDateClaimsButReportsVerificationError` | Pass | Medium |
 | TC-033 | Send the decoded token to the Verify screen | FR-16 | Manual UI | `Manual` | Not run | Medium |
 | TC-034 | Save a token with a label | FR-17 | Unit | `InMemoryTokenRepositoryTest#savesAndFindsToken`<br>`InMemoryTokenRepositoryTest#blankLabelBecomesUntitled`<br>`InMemoryTokenRepositoryTest#rejectsEmptyToken` | Pass | Medium |
-| TC-035 | Find saved tokens by label, newest first | FR-18 | Unit | `InMemoryTokenRepositoryTest#searchMatchesLabelIgnoringCase`<br>`FileTokenRepositoryTest#keepsSaveTimeAndOrderAfterReload` | Pending | Medium |
+| TC-035 | Find saved tokens by label, newest first | FR-18 | Unit | `InMemoryTokenRepositoryTest#searchMatchesLabelIgnoringCase`<br>`FileTokenRepositoryTest#keepsSaveTimeAndOrderAfterReload` | Pass | Medium |
 | TC-036 | Rename and delete a saved token | FR-19 | Unit | `InMemoryTokenRepositoryTest#renamesAndDeletes` | Pass | Low |
 | TC-037 | Sample tokens decode and verify | FR-17 | Integration | `InMemoryTokenRepositoryTest#sampleDataDecodesAndVerifiesWithDemoSecret` | Pass | Low |
 | TC-038 | Workspace table and opening a saved token | FR-18, FR-20 | Manual UI | `Manual` | Not run | Medium |
 | TC-039 | Recent history on the Home screen | FR-21 | Unit | `TokenHistoryTest#newestFirstWithoutDuplicates`<br>`TokenHistoryTest#deduplicatesBearerAndRawTokens`<br>`TokenHistoryTest#dropsOldestPastLimit`<br>`TokenHistoryTest#ignoresBlankTokens`<br>`TokenHistoryTest#limitMustBePositive` | Pass | Low |
-| TC-040 | Workspace survives closing and reopening | FR-22 | Unit | `FileTokenRepositoryTest#savedTokensSurviveReopening`<br>`FileTokenRepositoryTest#renameAndDeleteArePersisted`<br>`FileTokenRepositoryTest#searchWorksAfterReload` | Pending | High |
-| TC-041 | First launch creates the workspace file | FR-22 | Unit | `FileTokenRepositoryTest#firstLaunchCreatesFileWithSampleTokens`<br>`FileTokenRepositoryTest#missingFileWithoutSeedingStartsEmpty` | Pending | Medium |
-| TC-042 | Damaged workspace file does not stop the app | FR-22, NFR-5 | Unit | `FileTokenRepositoryTest#corruptFileStartsEmptyAndKeepsBackup`<br>`FileTokenRepositoryTest#entryWithMissingFieldsIsTreatedAsCorrupt` | Pending | High |
+| TC-040 | Workspace survives closing and reopening | FR-22 | Unit | `FileTokenRepositoryTest#savedTokensSurviveReopening`<br>`FileTokenRepositoryTest#renameAndDeleteArePersisted`<br>`FileTokenRepositoryTest#searchWorksAfterReload` | Pass | High |
+| TC-041 | First launch creates the workspace file | FR-22 | Unit | `FileTokenRepositoryTest#firstLaunchCreatesFileWithSampleTokens`<br>`FileTokenRepositoryTest#missingFileWithoutSeedingStartsEmpty` | Pass | Medium |
+| TC-042 | Damaged workspace file does not stop the app | FR-22, NFR-5 | Unit | `FileTokenRepositoryTest#corruptFileStartsEmptyAndKeepsBackup`<br>`FileTokenRepositoryTest#entryWithMissingFieldsIsTreatedAsCorrupt` | Pass | High |
 | TC-043 | Saved tokens are there after restarting the app | FR-22 | Manual UI | `Manual` | Not run | High |
 | TC-044 | Side navigation keeps each screen's input | FR-23 | Manual UI | `Manual` | Not run | High |
-| TC-045 | No networking code in the app | NFR-1 | Static | `ArchitectureTest#noSourceFileUsesNetworking`<br>`ArchitectureTest#sourcesAreFound` | Pending | High |
-| TC-046 | Secrets are never written to disk | NFR-1 | Unit | `FileTokenRepositoryTest#fileStoresOnlyTokensAndLabels` | Pending | High |
+| TC-045 | No networking code in the app | NFR-1 | Static | `ArchitectureTest#noSourceFileUsesNetworking`<br>`ArchitectureTest#sourcesAreFound` | Pass | High |
+| TC-046 | Secrets are never written to disk | NFR-1 | Unit | `FileTokenRepositoryTest#fileStoresOnlyTokensAndLabels` | Pass | High |
 | TC-047 | App works with the network turned off | NFR-1 | Manual | `Manual` | Not run | Medium |
-| TC-048 | Decode an 8 KB token in under 100 ms | NFR-2 | Performance | `PerformanceTest#decodes8kbTokenUnder100ms` | Pending | High |
-| TC-049 | Verify an 8 KB token in under 100 ms | NFR-2 | Performance | `PerformanceTest#verifiesHmac8kbTokenUnder100ms`<br>`PerformanceTest#verifiesRsa8kbTokenUnder100ms` | Pending | High |
+| TC-048 | Decode an 8 KB token in under 100 ms | NFR-2 | Performance | `PerformanceTest#decodes8kbTokenUnder100ms` | Pass | High |
+| TC-049 | Verify an 8 KB token in under 100 ms | NFR-2 | Performance | `PerformanceTest#verifiesHmac8kbTokenUnder100ms`<br>`PerformanceTest#verifiesRsa8kbTokenUnder100ms` | Pass | High |
 | TC-050 | App starts in under 3 seconds | NFR-2 | Manual | `Manual` | Not run | Medium |
 | TC-051 | New user decodes a token within 30 seconds | NFR-3 | Usability | `Manual` | Not run | Medium |
-| TC-052 | Random input never crashes the logic | NFR-5, FR-4 | Robustness | `RobustnessTest#decoderOnlyThrowsJwtExceptionForRandomInput`<br>`RobustnessTest#encoderOnlyThrowsJwtExceptionForRandomJson`<br>`RobustnessTest#verifierNeverThrowsAndNeverPassesGarbage` | Pending | High |
-| TC-053 | Number with a huge exponent (regression for D-01) | NFR-5, FR-4 | Robustness | `RobustnessTest#hugeExponentIsReportedAsInvalidJson` | Pending | High |
+| TC-052 | Random input never crashes the logic | NFR-5, FR-4 | Robustness | `RobustnessTest#decoderOnlyThrowsJwtExceptionForRandomInput`<br>`RobustnessTest#encoderOnlyThrowsJwtExceptionForRandomJson`<br>`RobustnessTest#verifierNeverThrowsAndNeverPassesGarbage` | Pass | High |
+| TC-053 | Number with a huge exponent (regression for D-01) | NFR-5, FR-4 | Robustness | `RobustnessTest#hugeExponentIsReportedAsInvalidJson` | Pass | High |
 | TC-054 | Build and tests pass on Linux with JDK 17 | NFR-6 | CI | `.github/workflows/build.yml` | Pass | Medium |
 | TC-055 | App runs on Windows and macOS | NFR-6 | Manual | `Manual` | Not run | Medium |
-| TC-056 | Logic packages have no UI code | NFR-7 | Static | `ArchitectureTest#corePackageHasNoUiCode`<br>`ArchitectureTest#workspacePackageHasNoUiCode` | Pending | Medium |
-| TC-057 | Line coverage of core and workspace is at least 80% | NFR-7 | Coverage | `JaCoCo (mvn verify)` | Pending | Medium |
+| TC-056 | Logic packages have no UI code | NFR-7 | Static | `ArchitectureTest#corePackageHasNoUiCode`<br>`ArchitectureTest#workspacePackageHasNoUiCode` | Pass | Medium |
+| TC-057 | Line coverage of core and workspace is at least 80% | NFR-7 | Coverage | `JaCoCo (mvn verify)` | Pass | Medium |
 | TC-058 | Keyboard only use and readable status | NFR-8 | Manual | `Manual` | Not run | Low |
-
+| TC-059 | Failed writes preserve state and permit retry | FR-22, NFR-5 | Unit | `FileTokenRepositoryTest#failedWritesPreserveTokensAndAllowRetry` | Pass | High |
+| TC-060 | Initial write failure allows startup | FR-22, NFR-5 | Unit | `FileTokenRepositoryTest#initialWriteFailureProducesWarningInsteadOfStoppingStartup` | Pass | High |
 ## Details
 
 ### TC-001: Decode a valid HS256 token
@@ -75,7 +76,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Call JwtDecoder.decode() with the example token.
   2. Read the header map, payload map, and signature segment.
 - **Expected:** Header has alg HS256 and typ JWT. Payload has sub "1234567890", name "John Doe", iat 1516239022. Signature segment is returned unchanged.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -89,7 +90,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Build the input "  Bearer <token>\n".
   2. Call JwtDecoder.decode() on it.
 - **Expected:** Token decodes. The raw token stored is the bare token with no prefix or whitespace.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -104,7 +105,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   2. Parse and print a JSON object whose keys are not alphabetical.
   3. Parse nested objects, arrays, and strings with quotes.
 - **Expected:** Header prints as {"alg": "HS256", "typ": "JWT"} over four indented lines. Keys keep the order they had in the token. Nested values and escaped strings survive the round trip.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -117,7 +118,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Call decode() with "   ".
 - **Expected:** A JwtException with the message "Paste a token to decode". No other exception.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -130,7 +131,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Call decode() with "abc.def" (two parts).
 - **Expected:** A JwtException whose message says a JWT has 3 parts.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -143,7 +144,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Call decode() with "@@@.e30.sig".
 - **Expected:** A JwtException saying the header is not valid Base64URL.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -158,7 +159,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   2. Parse {"a":}, {"a":1 (unclosed), {"a":1} extra, and [1,2] where an object is needed.
   3. Parse lenient JSON: single quotes, unquoted keys, 01, trailing comma, comments.
 - **Expected:** Each case ends in a JwtException starting with "Invalid JSON" or saying the payload is not valid JSON. Lenient syntax is rejected, not silently accepted.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -173,21 +174,21 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   2. Try to change the maps returned by the decoder.
   3. Change the input map after building a DecodedJwt.
 - **Expected:** Numbers are not rounded, null stays null, and nothing is HTML escaped. The decoded maps cannot be modified and do not change when the input changes.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Medium
 
-### TC-009: Signing algorithm is read from the header
+### TC-009: Signing algorithm and encoded signature length are reported
 
 - **Requirement(s):** FR-7
 - **Type:** Unit
-- **Automated by:** JwtDecoderTest#allowsUnsignedTokenWithEmptySignature, JwtDecoderTest#distinguishesMissingAlgorithmFromNone
+- **Automated by:** JwtDecoderTest#allowsUnsignedTokenWithEmptySignature, JwtDecoderTest#describesAlgorithmAndSignatureLength, JwtDecoderTest#distinguishesMissingAlgorithmFromNone
 - **Preconditions:** None.
 - **Steps:**
   1. Decode a token with alg "none" and an empty signature.
   2. Decode tokens whose header is {} and {"alg":null}.
-- **Expected:** alg "none" is reported as "none" with an empty signature. A missing or null alg is reported as "(missing)", not as "none".
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Expected:** alg "none" is reported as "none" with an empty signature. A missing or null alg is reported as "(missing)", not as "none". The description used by Decode reports 43 chars for the HS256 sample and none for an empty signature; UI rendering remains manual.
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Medium
 
@@ -215,7 +216,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Inspect a payload whose exp is 2 hours after the clock time.
 - **Expected:** Status VALID with the message "Expires in 2 hours".
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -229,7 +230,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Inspect a payload whose exp is 90 seconds before the clock time.
   2. Inspect a payload whose exp equals the clock time exactly.
 - **Expected:** Status EXPIRED. exp 90 seconds ago reads "Expired 1 minute ago". The exact boundary second also counts as expired.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -242,7 +243,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Inspect a payload whose nbf is 30 seconds ahead and exp one hour ahead.
 - **Expected:** Status NOT_YET_VALID (nbf wins over a future exp), with the message "Starts in 30 seconds".
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -256,7 +257,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Inspect a payload with no exp.
   2. Inspect a payload with "exp": null.
 - **Expected:** Missing exp gives NO_EXPIRY and "No expiry set (exp claim missing)". An exp of null is not treated as missing; it is flagged as an invalid time claim.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -270,7 +271,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Inspect a payload with iat 1516239022 and exp one hour later, clock zone UTC.
   2. Inspect iat 0.5 and iat -0.5.
 - **Expected:** Claims are listed in the order exp, iat. iat reads "2018-01-18 01:30:22 Z". 0.5 reads 1970-01-01 00:00:00 Z and -0.5 reads 1969-12-31 23:59:59 Z (rounded down).
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -286,7 +287,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   3. Set each of exp, iat, nbf to "bad date" in turn.
   4. Inspect iat equal to Instant.MAX.
 - **Expected:** Every case gives INVALID_TIME_CLAIM with a message starting "Invalid <claim>:" and the claim shown as "Invalid timestamp". No exception is thrown.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Medium
 
@@ -299,7 +300,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Format 1 s, 45 min, 3 days, and -120 s.
 - **Expected:** Text is "1 second", "45 minutes", "3 days", and "2 minutes" (negative values use the absolute time).
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Low
 
@@ -312,7 +313,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Encode the jwt.io header and payload with HS256.
 - **Expected:** Output is byte for byte the same as the published example token.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -326,7 +327,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Encode with an empty header and HS384.
   2. Encode with header {"alg":"none","kid":"k1"} and HS512.
 - **Expected:** Header gets alg HS384 and typ JWT. In the second case alg becomes HS512 (the header cannot pick its own algorithm) and kid is kept.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -340,7 +341,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Sign a token with HS256, HS384, HS512 and verify each with the same secret.
   2. Sign with RS256, RS384, RS512 and verify with the public key.
 - **Expected:** All six tokens are compact (three parts) and verify successfully.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -348,12 +349,12 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 
 - **Requirement(s):** FR-9
 - **Type:** Unit
-- **Automated by:** JwtEncoderTest#rejectsInvalidPayloadJson
+- **Automated by:** JwtEncoderTest#rejectsInvalidHeaderJsonWithPosition, JwtEncoderTest#rejectsInvalidPayloadJson
 - **Preconditions:** None.
 - **Steps:**
-  1. Encode with payload {"sub": }.
+  1. Encode with payload {"sub": } and a separate malformed multiline header. Assert the errors identify line 1 and line 2 respectively, and include a numeric column.
 - **Expected:** JwtException starting with "Invalid JSON". The message includes the line and column of the error. No token is produced.
-- **Actual:** Exception raised and no token produced (CI run #15). The test checks the "Invalid JSON" prefix only; the position text is not asserted yet (see gap G-2).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -369,7 +370,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   3. Parse null, empty, garbage, and a PEM with an invalid body as both key types.
   4. Parse an EC key pair, and an RSA public key where a private key is required.
 - **Expected:** Each case gives a JwtException with a message saying what kind of key was expected, for example "Enter a secret to sign with".
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -383,7 +384,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Convert a fresh key pair to PKCS#1 "RSA PRIVATE KEY" and "RSA PUBLIC KEY" PEM.
   2. Parse both, sign an RS256 token with the private key, verify with the public key.
 - **Expected:** Both keys load with the same bytes as the originals and the token verifies.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Medium
 
@@ -397,7 +398,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Encode a header with 0.1234567890123456789 and a payload with 12345.67890123456789 and 9223372036854775808.
   2. Decode the parts and verify.
 - **Expected:** Header and payload text match the input exactly and the signature verifies.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Medium
 
@@ -424,7 +425,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Verify the example token with "your-256-bit-secret".
 - **Expected:** Result is valid with the message "Signature verified (HS256)".
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -437,7 +438,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Verify with "wrong-secret".
 - **Expected:** Result is invalid and the message starts with "Signature does not match".
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -451,7 +452,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Replace the payload with one where name is "Admin", keep the old signature, verify.
   2. Sign a header and payload that contain extra spaces, newlines, and <tag>&é directly with HMAC256, then verify.
 - **Expected:** Tampered token fails. The untouched token with odd spacing still passes.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -465,7 +466,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Sign with key pair A and verify with public key A.
   2. Verify the same token with public key B.
 - **Expected:** Public key A passes. Public key B fails.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Medium
 
@@ -480,7 +481,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   2. Verify a token with alg ES256.
   3. Verify tokens with header {} and {"alg":null}.
 - **Expected:** All are invalid. Messages mention "none", read "Unsupported algorithm: ES256", and say the header has no alg value.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -494,7 +495,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Verify an HS256 token with an empty key.
   2. Verify the text "not-a-token".
 - **Expected:** "Enter the secret that was used to sign this token", and an invalid result for the broken token. No exception reaches the caller.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** High
 
@@ -508,7 +509,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Verify a correctly signed token with exp in 1970 and nbf, iat in 2100.
   2. Sign a token whose exp is "not a date", decode it, then verify it.
 - **Expected:** The first token verifies (expiry is shown on the Decode screen, not by the verifier). The string exp still decodes for inspection, and verification returns an invalid result starting "Could not verify:" instead of crashing.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Medium
 
@@ -536,7 +537,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   2. Save with a blank label.
   3. Save a blank token.
 - **Expected:** Label and token are trimmed and listed. Blank label becomes "Untitled token". Blank token is rejected.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Medium
 
@@ -551,8 +552,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   2. Search "".
   3. Save two tokens a day apart, reopen the file, list them.
 - **Expected:** Search is case insensitive and returns one hit; empty search returns all. List is newest first and save times are kept.
-- **Actual:** In memory part passed in CI run #15. File part to be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** Medium
 
 ### TC-036: Rename and delete a saved token
@@ -566,7 +567,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   2. Rename to " ".
   3. Delete it twice.
 - **Expected:** Rename works, blank rename returns false, first delete returns true, second returns false, list is empty.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Low
 
@@ -580,7 +581,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Decode each of the 3 sample tokens.
   2. Verify each with "jwtoffline-demo-secret".
 - **Expected:** Three tokens, all decode, all verify. Checks repository, decoder, and verifier together.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Low
 
@@ -613,7 +614,7 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   4. Add a blank token and null.
   5. Create a history with limit 0.
 - **Expected:** Order is a, b with no duplicate. All Bearer forms count as one token. With limit 2 the list is 3, 2. Blank and null are ignored. Limit 0 is rejected. The app uses the default limit of 20.
-- **Actual:** Matched expected result. All assertions passed in CI run #15 (development, Oct 11, 2026).
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
 - **Status:** Pass
 - **Priority:** Low
 
@@ -628,8 +629,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   2. Save two, rename one, delete the other, reopen.
   3. Save two, reopen, search.
 - **Expected:** Reopened repository has the same tokens with the same ids, labels, and times. Rename and delete are kept. Search works on reloaded data.
-- **Actual:** To be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** High
 
 ### TC-041: First launch creates the workspace file
@@ -642,8 +643,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Open with sample seeding on.
   2. Open with sample seeding off.
 - **Expected:** With seeding, the folder and file are created and hold the 3 sample tokens. Without seeding, the workspace is empty and no file is written until the first save.
-- **Actual:** To be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** Medium
 
 ### TC-042: Damaged workspace file does not stop the app
@@ -655,8 +656,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Open the repository on the damaged file.
 - **Expected:** Workspace starts empty, a warning is available, and the old file is copied to workspace.json.corrupt so nothing is lost.
-- **Actual:** To be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** High
 
 ### TC-043: Saved tokens are there after restarting the app
@@ -699,8 +700,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Scan every .java file under src/main/java for java.net, HttpURLConnection, and Socket usage.
 - **Expected:** No file matches. The guard test confirms the scan actually found the source files.
-- **Actual:** To be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** High
 
 ### TC-046: Secrets are never written to disk
@@ -713,8 +714,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Save a token signed with the demo secret.
   2. Read workspace.json as text.
 - **Expected:** The file holds the label and token but not the secret.
-- **Actual:** To be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** High
 
 ### TC-047: App works with the network turned off
@@ -741,8 +742,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Warm up with 5 decodes.
   2. Time 21 decodes and take the median.
 - **Expected:** Median is under 100 ms.
-- **Actual:** To be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** High
 
 ### TC-049: Verify an 8 KB token in under 100 ms
@@ -755,8 +756,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Warm up 5 times.
   2. Time 21 verifications of each and take the median.
 - **Expected:** Both verify as valid and both medians are under 100 ms.
-- **Actual:** To be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** High
 
 ### TC-050: App starts in under 3 seconds
@@ -798,8 +799,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   2. Send 1,000 random header and payload pairs to the encoder.
   3. Send 1,000 random tokens and keys to the verifier.
 - **Expected:** Decoder and encoder only ever throw JwtException, which every screen catches and shows. Verifier never throws and never reports a random token as valid.
-- **Actual:** To be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** High
 
 ### TC-053: Number with a huge exponent (regression for D-01)
@@ -812,8 +813,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Parse {"exp":1e9999999999}.
   2. Decode and verify a token whose payload is that JSON.
 - **Expected:** A JwtException with a readable message. Before the fix this threw NumberFormatException, which the screens do not catch.
-- **Actual:** To be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** High
 
 ### TC-054: Build and tests pass on Linux with JDK 17
@@ -852,8 +853,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Steps:**
   1. Scan core and workspace sources for javafx imports.
 - **Expected:** No file in core or workspace imports JavaFX.
-- **Actual:** To be filled after the ITR2.1 CI run.
-- **Status:** Pending
+- **Actual:** Passed locally on Windows/JDK 17, November 8, 2026 (mvn -o verify; 94 tests, zero failures, errors, or skips).
+- **Status:** Pass
 - **Priority:** Medium
 
 ### TC-057: Line coverage of core and workspace is at least 80%
@@ -866,8 +867,8 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
   1. Run mvn verify.
   2. Open target/site/jacoco/index.html and read line coverage for the core and workspace packages.
 - **Expected:** Both packages are at 80% line coverage or higher.
-- **Actual:** To be read from the JaCoCo report attached to the ITR2.1 CI run. Full coverage analysis is planned for Deliverable 3.1.
-- **Status:** Pending
+- **Actual:** Local JaCoCo report, November 8, 2026: core 215/220 lines (97.7%); workspace 135/144 lines (93.8%). Both exceed 80%. UI coverage is 0%; manual checks remain outstanding.
+- **Status:** Pass
 - **Priority:** Medium
 
 ### TC-058: Keyboard only use and readable status
@@ -883,3 +884,25 @@ Generated from the same data as the Deliverable 2.1 PDF. Status: Pass, Fail, Pen
 - **Actual:** Not run yet. Scheduled for the Week 10 manual test session (before Deliverable 2.2).
 - **Status:** Not run
 - **Priority:** Low
+
+### TC-059: Failed workspace writes preserve state and permit retry
+
+- **Requirement(s):** FR-22, NFR-5
+- **Type:** Unit
+- **Automated by:** FileTokenRepositoryTest#failedWritesPreserveTokensAndAllowRetry
+- **Steps:** Save a token, block the storage directory, attempt save/rename/delete, restore access, and retry.
+- **Expected:** Failed writes raise JwtException, preserve the original tokens and file, and allow a later successful retry.
+- **Actual:** Passed locally on November 8, 2026 (mvn -o verify). UI error banners were not manually tested.
+- **Status:** Pass
+- **Priority:** High
+
+### TC-060: Initial workspace write failure allows startup
+
+- **Requirement(s):** FR-22, NFR-5
+- **Type:** Unit
+- **Automated by:** FileTokenRepositoryTest#initialWriteFailureProducesWarningInsteadOfStoppingStartup
+- **Steps:** Open a first-launch workspace whose storage directory is blocked by a file.
+- **Expected:** Construction succeeds with an empty repository and warning instead of an uncaught exception.
+- **Actual:** Passed locally on November 8, 2026 (mvn -o verify). Warning rendering remains a manual UI check.
+- **Status:** Pass
+- **Priority:** High
