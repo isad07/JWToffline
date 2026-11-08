@@ -119,8 +119,7 @@ class DecodeView extends VBox {
         }
         headerOut.setText(current.prettyHeader());
         payloadOut.setText(current.prettyPayload());
-        algLabel.setText("Algorithm: " + current.algorithmName() + "   Signature: "
-                + (current.signatureSegment().isEmpty() ? "none" : current.signatureSegment().length() + " chars"));
+        algLabel.setText(current.signatureDescription());
         ClaimInspector.Inspection inspection = ctx.inspector.inspect(current.payload());
         updateTimeStatus(inspection);
         fillTimes(inspection.readableTimes());
@@ -186,9 +185,13 @@ class DecodeView extends VBox {
         dialog.setHeaderText("Give this token a label");
         dialog.setContentText("Label:");
         dialog.showAndWait().ifPresent(label -> {
-            ctx.repository.save(label, current.rawToken());
-            rememberCurrent();
-            Ui.setStatus(saveStatus, "Saved to workspace as \"" + (label.isBlank() ? "Untitled token" : label.trim()) + "\"", Ui.StatusKind.OK);
+            try {
+                ctx.repository.save(label, current.rawToken());
+                rememberCurrent();
+                Ui.setStatus(saveStatus, "Saved to workspace as \"" + (label.isBlank() ? "Untitled token" : label.trim()) + "\"", Ui.StatusKind.OK);
+            } catch (JwtException ex) {
+                Ui.setStatus(saveStatus, ex.getMessage(), Ui.StatusKind.BAD);
+            }
         });
     }
 }

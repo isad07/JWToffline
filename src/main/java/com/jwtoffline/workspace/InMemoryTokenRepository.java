@@ -44,8 +44,9 @@ public class InMemoryTokenRepository implements TokenRepository {
         }
         String cleanLabel = label == null || label.isBlank() ? "Untitled token" : label.trim();
         SavedToken saved = new SavedToken(UUID.randomUUID().toString(), cleanLabel, token.trim(), clock.instant());
+        Map<String, SavedToken> before = new LinkedHashMap<>(tokens);
         tokens.put(saved.id(), saved);
-        changed();
+        persistOrRestore(before);
         return saved;
     }
 
@@ -73,16 +74,18 @@ public class InMemoryTokenRepository implements TokenRepository {
         if (existing == null || newLabel == null || newLabel.isBlank()) {
             return false;
         }
+        Map<String, SavedToken> before = new LinkedHashMap<>(tokens);
         tokens.put(id, existing.withLabel(newLabel.trim()));
-        changed();
+        persistOrRestore(before);
         return true;
     }
 
     @Override
     public boolean delete(String id) {
+        Map<String, SavedToken> before = new LinkedHashMap<>(tokens);
         boolean removed = tokens.remove(id) != null;
         if (removed) {
-            changed();
+            persistOrRestore(before);
         }
         return removed;
     }
@@ -96,5 +99,15 @@ public class InMemoryTokenRepository implements TokenRepository {
 
     /** Called after every save, rename, or delete. Does nothing for the in memory store. */
     protected void changed() {
+    }
+
+    private void persistOrRestore(Map<String, SavedToken> before) {
+        try {
+            changed();
+        } catch (RuntimeException ex) {
+            tokens.clear();
+            tokens.putAll(before);
+            throw ex;
+        }
     }
 }

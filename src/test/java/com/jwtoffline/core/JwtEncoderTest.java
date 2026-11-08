@@ -51,6 +51,15 @@ class JwtEncoderTest {
         JwtException ex = assertThrows(JwtException.class,
                 () -> encoder.encode("{}", "{\"sub\": }", JwtAlgorithm.HS256, "k"));
         assertTrue(ex.getMessage().startsWith("Invalid JSON"));
+        assertTrue(ex.getMessage().matches("(?s).*line 1 column [0-9]+.*"), ex.getMessage());
+    }
+
+    @Test
+    void rejectsInvalidHeaderJsonWithPosition() {
+        JwtException ex = assertThrows(JwtException.class,
+                () -> encoder.encode("{\n  \"kid\": }", "{}", JwtAlgorithm.HS256, "k"));
+        assertTrue(ex.getMessage().startsWith("Invalid JSON"));
+        assertTrue(ex.getMessage().matches("(?s).*line 2 column [0-9]+.*"), ex.getMessage());
     }
 
     @Test

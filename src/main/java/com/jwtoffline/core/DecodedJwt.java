@@ -19,6 +19,11 @@ public record DecodedJwt(String rawToken, String signatureSegment,
         return alg == null ? "(missing)" : alg.toString();
     }
 
+    public String signatureDescription() {
+        return "Algorithm: " + algorithmName() + "   Signature: "
+                + (signatureSegment.isEmpty() ? "none" : signatureSegment.length() + " chars");
+    }
+
     private static Map<String, Object> immutableMap(Map<?, ?> values) {
         Map<String, Object> copy = new LinkedHashMap<>();
         values.forEach((key, value) -> copy.put((String) key, immutableValue(value)));
