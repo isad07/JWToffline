@@ -4,7 +4,7 @@ import com.jwtoffline.core.ClaimInspector;
 import com.jwtoffline.core.JwtDecoder;
 import com.jwtoffline.core.JwtEncoder;
 import com.jwtoffline.core.SignatureVerifier;
-import com.jwtoffline.workspace.InMemoryTokenRepository;
+import com.jwtoffline.workspace.FileTokenRepository;
 import com.jwtoffline.workspace.TokenHistory;
 import com.jwtoffline.workspace.TokenRepository;
 
@@ -14,7 +14,8 @@ public final class AppContext {
     public final JwtEncoder encoder = new JwtEncoder();
     public final SignatureVerifier verifier = new SignatureVerifier();
     public final ClaimInspector inspector = new ClaimInspector();
-    public final TokenRepository repository = InMemoryTokenRepository.withSampleData();
+    /** Saved to ~/.jwtoffline/workspace.json so tokens survive restarts (FR-22). */
+    public final TokenRepository repository = FileTokenRepository.openDefault();
     public final TokenHistory history = new TokenHistory();
 
     private final Navigator navigator;

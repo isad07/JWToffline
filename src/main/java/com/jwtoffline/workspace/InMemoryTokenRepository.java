@@ -2,6 +2,7 @@ package com.jwtoffline.workspace;
 
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-/** Stores tokens for the current session. */
+/** Stores tokens for the current session. Subclasses can persist them by overriding {@link #changed()}. */
 public class InMemoryTokenRepository implements TokenRepository {
 
     private final Map<String, SavedToken> tokens = new LinkedHashMap<>();
@@ -25,10 +26,15 @@ public class InMemoryTokenRepository implements TokenRepository {
 
     public static InMemoryTokenRepository withSampleData() {
         InMemoryTokenRepository repo = new InMemoryTokenRepository();
-        for (SampleTokens.SampleToken sample : SampleTokens.ALL) {
-            repo.save(sample.label(), sample.token());
-        }
+        repo.addSamples();
         return repo;
+    }
+
+    /** Adds the demo tokens from {@link SampleTokens}. */
+    protected void addSamples() {
+        for (SampleTokens.SampleToken sample : SampleTokens.ALL) {
+            save(sample.label(), sample.token());
+        }
     }
 
     @Override
@@ -39,6 +45,7 @@ public class InMemoryTokenRepository implements TokenRepository {
         String cleanLabel = label == null || label.isBlank() ? "Untitled token" : label.trim();
         SavedToken saved = new SavedToken(UUID.randomUUID().toString(), cleanLabel, token.trim(), clock.instant());
         tokens.put(saved.id(), saved);
+        changed();
         return saved;
     }
 
@@ -67,11 +74,27 @@ public class InMemoryTokenRepository implements TokenRepository {
             return false;
         }
         tokens.put(id, existing.withLabel(newLabel.trim()));
+        changed();
         return true;
     }
 
     @Override
     public boolean delete(String id) {
-        return tokens.remove(id) != null;
+        boolean removed = tokens.remove(id) != null;
+        if (removed) {
+            changed();
+        }
+        return removed;
+    }
+
+    /** Puts tokens back exactly as they were stored, without calling {@link #changed()}. */
+    protected void restore(Collection<SavedToken> saved) {
+        for (SavedToken t : saved) {
+            tokens.put(t.id(), t);
+        }
+    }
+
+    /** Called after every save, rename, or delete. Does nothing for the in memory store. */
+    protected void changed() {
     }
 }
