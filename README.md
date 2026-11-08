@@ -8,15 +8,15 @@ JWTOffline lets developers inspect token headers and claims, create signed token
 
 ## Features
 
-| Feature | Status (ITR1.2 prototype) |
+| Feature | Status (ITR2.1) |
 |---------|---------------------------|
 | **Decode**: header, payload, readable exp/iat/nbf, expired banner | Working |
 | **Encode**: build and sign with HS256/384/512 and RS256/384/512 | Working |
 | **Verify**: check signature with a secret or RSA public key | Working |
-| **Workspace**: save, label, search, rename, delete tokens | Working (session only, with sample tokens) |
+| **Workspace**: save, label, search, rename, delete tokens | Working, saved to `~/.jwtoffline/workspace.json` |
 | **History**: recent tokens on the Home screen | Working (session only) |
 | **RSA keys**: PKCS#1, PKCS#8 private keys and SPKI public keys (unencrypted PEM) | Working |
-| Saving the workspace to disk, syntax highlighting | Planned for later iterations |
+| Syntax highlighting, keyboard shortcuts | Planned for Iteration 2.2 |
 
 ## Running the prototype
 
@@ -29,6 +29,9 @@ mvn clean verify    # clean build, tests, coverage report, and JAR
 ```
 
 Sample tokens in the Workspace are signed with the secret `jwtoffline-demo-secret`, so you can try Verify straight away.
+The workspace is kept in `~/.jwtoffline/workspace.json`; delete that file to start fresh.
+
+The test plan, traceability matrix, and all test cases are in [docs/deliverable-2.1](docs/deliverable-2.1/).
 
 ## Tech Stack
 
