@@ -10,6 +10,7 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.junit.jupiter.api.Test;
 
+/** US-2.2, US-3.2 / FR-11, FR-14. Test cases TC-022, TC-023. */
 class KeyParserTest {
 
     @Test

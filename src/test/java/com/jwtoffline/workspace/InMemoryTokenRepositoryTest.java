@@ -11,7 +11,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/** US-4.1 to US-4.4 / FR-15 to FR-19 */
+/** US-4.1 to US-4.3 / FR-17 to FR-19. Test cases TC-034 to TC-037. */
 class InMemoryTokenRepositoryTest {
 
     private InMemoryTokenRepository repo;

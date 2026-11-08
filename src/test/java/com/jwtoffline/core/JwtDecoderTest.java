@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** US-1.1, US-1.2, US-1.4 / FR-1 to FR-4 */
+/** US-1.1, US-1.2, US-1.4 / FR-1 to FR-4, FR-7. Test cases TC-001 to TC-009. */
 class JwtDecoderTest {
 
     // Well known example token from the JWT spec docs, secret "your-256-bit-secret"

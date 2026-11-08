@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
+/** US-1.1, US-2.1 / FR-3, FR-4, FR-9. Test cases TC-003, TC-007, TC-008. */
 class JsonTest {
 
     @Test

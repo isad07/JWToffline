@@ -36,6 +36,10 @@ public final class Json {
             return COMPACT.fromJson(text, Object.class);
         } catch (JsonParseException ex) {
             throw new JwtException("Invalid JSON: " + ex.getMessage(), ex);
+        } catch (NumberFormatException ex) {
+            // BigDecimal rejects numbers like 1e9999999999. Gson does not wrap this, so without
+            // this catch it reached the screens as an unhandled exception (defect D-01, ITR2.1).
+            throw new JwtException("Invalid JSON: a number is too large to read", ex);
         }
     }
 

@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** US-4.5 / FR-20 */
+/** US-4.4 / FR-21: recent history on the Home screen. Test cases TC-039. */
 class TokenHistoryTest {
 
     @Test

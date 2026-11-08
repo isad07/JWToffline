@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** US-1.3 / FR-5, FR-6 */
+/** US-1.3 / FR-5, FR-6. Test cases TC-011 to TC-017. */
 class ClaimInspectorTest {
 
     private static final long NOW = 1_800_000_000L;

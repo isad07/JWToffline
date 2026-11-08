@@ -8,7 +8,7 @@ import java.security.KeyPair;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** US-3.1 to US-3.3 / FR-11 to FR-14 */
+/** US-3.1 to US-3.3 / FR-13 to FR-15, NFR-4. Test cases TC-026 to TC-032. */
 class SignatureVerifierTest {
 
     private final SignatureVerifier verifier = new SignatureVerifier();

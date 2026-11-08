@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.security.KeyPair;
 import org.junit.jupiter.api.Test;
 
-/** US-2.1 to US-2.3 / FR-7 to FR-10 */
+/** US-2.1, US-2.2 / FR-9 to FR-11, NFR-4. Test cases TC-018 to TC-024. */
 class JwtEncoderTest {
 
     private final JwtEncoder encoder = new JwtEncoder();
